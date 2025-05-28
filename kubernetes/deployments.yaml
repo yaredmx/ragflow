@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ragflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ragflow
+  template:
+    metadata:
+      labels:
+        app: ragflow
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: ${TIMEZONE}
+        - name: HF_ENDPOINT
+          value: ${HF_ENDPOINT}
+        - name: MACOS
+          value: ${MACOS}
+        image: ${RAGFLOW_IMAGE}
+        name: ragflow
+        ports:
+        - containerPort: 9380
+        - containerPort: 80
+        - containerPort: 443
+        - containerPort: 5678
+        - containerPort: 5679
+        - containerPort: 9382
+        resources:
+          limits:
+            memory: 512Mi
+        volumeMounts:
+        - mountPath: /ragflow/logs
+          name: ./ragflow-logs
+        - mountPath: /etc/nginx/conf.d/ragflow.conf
+          name: ./nginx/ragflow.conf
+        - mountPath: /etc/nginx/proxy.conf
+          name: ./nginx/proxy.conf
+        - mountPath: /etc/nginx/nginx.conf
+          name: ./nginx/nginx.conf
+        - mountPath: /ragflow/history_data_agent
+          name: ../history_data_agent
+        - mountPath: /ragflow/conf/service_conf.yaml.template
+          name: ./service_conf.yaml.template
+        - mountPath: /ragflow/entrypoint.sh
+          name: ./entrypoint.sh
+      volumes:
+      - name: ./ragflow-logs
+        persistentVolumeClaim:
+          claimName: ./ragflow-logs
+      - name: ./nginx/ragflow.conf
+        persistentVolumeClaim:
+          claimName: ./nginx/ragflow.conf
+      - name: ./nginx/proxy.conf
+        persistentVolumeClaim:
+          claimName: ./nginx/proxy.conf
+      - name: ./nginx/nginx.conf
+        persistentVolumeClaim:
+          claimName: ./nginx/nginx.conf
+      - name: ../history_data_agent
+        persistentVolumeClaim:
+          claimName: ../history_data_agent
+      - name: ./service_conf.yaml.template
+        persistentVolumeClaim:
+          claimName: ./service_conf.yaml.template
+      - name: ./entrypoint.sh
+        persistentVolumeClaim:
+          claimName: ./entrypoint.sh
